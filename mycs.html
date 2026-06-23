@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>魔域传说 · 终极完善版</title>
+<style id="themeStyle">
+:root {
+ --bg: #0a0a14; --panel: #1a1a2e; --border: #3a2a1a;
+ --gold: #f0c050; --text: #e0d0b0; --red: #f08080;
+ --green: #60c060; --blue: #6080f0;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Microsoft YaHei'; }
+body {
+ background: var(--bg); color: var(--text);
+ min-height: 100vh; display: flex; justify-content: center; padding: 10px;
+}
+.game {
+ width: 100%; max-width: 960px;
+ background: var(--panel); border-radius: 14px; padding: 14px;
+ border: 2px solid var(--border);
+}
+.header { text-align: center; border-bottom: 2px solid var(--border); padding-bottom: 10px; margin-bottom: 12px; }
+.header h1 { color: var(--gold); font-size: 1.8em; }
+.subtitle { color: #a09070; font-size: .85em; }
+.player {
+ display: flex; gap: 10px; background: rgba(255,255,255,.05);
+ border-radius: 10px; padding: 10px; margin-bottom: 12px;
+}
+.avatar {
+ width: 56px; height: 56px; border-radius: 50%;
+ background: linear-gradient(135deg, #3a2a1a, #5a4a3a);
+ font-size: 1.8em; display: flex; align-items: center; justify-content: center;
+ border: 2px solid var(--gold); flex-shrink: 0;
+}
+.stats { flex: 1; font-size: .78em; }
+.row { display: flex; justify-content: space-between; margin: 2px 0; }
+.bar { height: 5px; background: #2a2a3a; border-radius: 3px; overflow: hidden; margin: 2px 0; }
+.fill { height: 100%; transition: .3s; }
+.hp { background: linear-gradient(90deg, #c04040, #f06060); }
+.mp { background: linear-gradient(90deg, #4060c0, #6080f0); }
+.exp { background: linear-gradient(90deg, #60c040, #80f060); }
+.tabs { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 10px; }
+.tabs button {
+ flex: 1; min-width: 60px; padding: 6px; border: none; border-radius: 5px;
+ background: #2a2a4a; color: #a09070; cursor: pointer; font-size: .75em;
+}
+.tabs button.active { background: #5a3a1a; color: var(--gold); }
+.main { display: flex; gap: 12px; }
+.left { flex: 1; min-width: 0; }
+.right { width: 240px; flex-shrink: 0; }
+.panel {
+ background: rgba(255,255,255,.04); border-radius: 10px; padding: 10px;
+ border: 1px solid var(--border); margin-bottom: 10px;
+}
+.panel h3 { color: var(--gold); margin-bottom: 6px; font-size: .95em; }
+.scroll { max-height: 300px; overflow: auto; background: rgba(0,0,0,.3); padding: 8px; border-radius: 6px; font-size: .8em; }
+.log { padding: 2px 0; border-bottom: 1px solid rgba(255,255,255,.05); }
+.combat { color: var(--red); }
+.loot { color: var(--gold); }
+.info { color: var(--blue); }
+.level { color: var(--green); }
+.btn {
+ padding: 8px 10px; border: none; border-radius: 6px;
+ background: linear-gradient(135deg, #5a3a2a, #7a5a3a);
+ color: #f0e0b0; font-weight: bold; cursor: pointer; font-size: .78em;
+ touch-action: manipulation;
+}
+.btn:active { transform: scale(.96); }
+.btn-primary { background: linear-gradient(135deg, #3a5a2a, #5a7a3a); }
+.btn-danger { background: linear-gradient(135deg, #5a2a2a, #7a3a3a); }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 8px; }
+.grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.grid4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+.monster {
+ display: flex; align-items: center; gap: 8px;
+ background: rgba(80,30,30,.8); border-radius: 8px; padding: 8px;
+ border: 1px solid #a04040; margin-bottom: 6px;
+}
+.monster .icon { font-size: 1.8em; }
+.monster .info { flex: 1; }
+.monster .name { color: var(--red); font-weight: bold; }
+.card {
+ background: rgba(255,255,255,.06); border-radius: 8px; padding: 6px;
+ border: 1px solid var(--border); text-align: center; cursor: pointer;
+}
+.card:active { transform: scale(.97); }
+.skin-bar { display: flex; gap: 6px; justify-content: center; margin-bottom: 10px; }
+.skin-btn {
+ padding: 4px 8px; border-radius: 6px; border: 1px solid var(--border);
+ background: transparent; color: var(--text); font-size: .7em; cursor: pointer;
+}
+.skin-btn.active { background: var(--gold); color: #000; }
+.auto-on {
+ background: var(--green); color: #000; padding: 4px 8px; border-radius: 6px;
+ font-size: .7em; animation: pulse 1s infinite;
+}
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .6; } }
+@media (max-width: 700px) {
+ .main { flex-direction: column; }
+ .right { width: 100%; }
+ .grid4 { grid-template-columns: repeat(3, 1fr); }
+ .tabs button { min-width: 50px; padding: 5px; font-size: .7em; }
+}
+</style>
+</head>
+<body>
+<div class="game">
+ <div class="header">
+  <h1>⚔️ 魔域传说</h1>
+  <div class="subtitle">终极完善版 · 所有系统完整</div>
+ </div>
+ <div class="skin-bar">
+  <button class="skin-btn active" onclick="setSkin('dark')">暗金</button>
+  <button class="skin-btn" onclick="setSkin('ice')">寒冰</button>
+  <button class="skin-btn" onclick="setSkin('blood')">血狱</button>
+ </div>
+ <div class="player">
+  <div class="avatar" id="avatar">🧙</div>
+  <div class="stats">
+   <div class="row"><span id="pName">冒险者</span> Lv.<span id="pLevel">1</span></div>
+   <div class="row">❤️ <span id="pHp">100</span>/<span id="pMaxHp">100</span></div>
+   <div class="bar"><div class="fill hp" id="hpBar"></div></div>
+   <div class="row">💧 <span id="pMp">50</span>/<span id="pMaxMp">50</span></div>
+   <div class="bar"><div class="fill mp" id="mpBar"></div></div>
+   <div class="row">⚔️ <span id="pAtk">15</span> 🛡️ <span id="pDef">8</span> 💰 <span id="pGold">100</span></div>
+   <div class="bar"><div class="fill exp" id="expBar"></div></div>
+   <div class="row">
+    职业：<span id="pJob">初心者</span>
+    <span id="autoStatus" class="auto-on" style="display:none;">🤖 自动挂机中</span>
+   </div>
+  </div>
+ </div>
+ <div class="tabs" id="tabs">
+  <button class="active" data-tab="explore">🗺️ 探索</button>
+  <button data-tab="city">🏰 主城</button>
+  <button data-tab="equip">⚔️ 装备</button>
+  <button data-tab="bag">🎒 背包</button>
+  <button data-tab="mount">🐎 坐骑</button>
+  <button data-tab="job">🔄 转职</button>
+  <button data-tab="guild">🏰 公会战</button>
+  <button data-tab="auto">🤖 挂机</button>
+  <button data-tab="achieve">🏆 成就</button>
+ </div>
+ <div class="main">
+  <div class="left">
+   <div class="panel">
+    <div id="content" class="scroll"></div>
+    <div id="actions" class="grid2"></div>
+   </div>
+  </div>
+  <div class="right">
+   <div class="panel">
+    <h3>📜 日志</h3>
+    <div id="log" class="scroll" style="height:180px;"></div>
+   </div>
+   <div class="panel">
+    <h3>🎯 任务</h3>
+    <div id="quest" style="font-size:.85em;">击败10只哥布林 (0/10)</div>
+   </div>
+   <div class="grid2">
+    <button class="btn" onclick="saveGame()">💾 保存</button>
+    <button class="btn" onclick="loadGame()">📂 读取</button>
+    <button class="btn btn-danger" onclick="resetGame()">🔄 重置</button>
+   </div>
+  </div>
+ </div>
+</div>
+<script>
+const G = {
+ player: { name: "冒险者", level: 1, exp: 0, maxExp: 100, hp: 100, maxHp: 100, mp: 50, maxMp: 50, atk: 15, def: 8, gold: 100, job: 0, mount: 0 },
+ equip: { weapon: null, armor: null, helmet: null, boots: null, accessory: null },
+ bag: [
+  { id: 1, name: "小红药水", icon: "🧪", type: "consume", effect: "heal", value: 30, count: 5 },
+  { id: 2, name: "小蓝药水", icon: "🔮", type: "consume", effect: "mana", value: 20, count: 3 },
+  { id: 3, name: "木剑", icon: "🪵", type: "weapon", atk: 5 },
+  { id: 4, name: "布甲", icon: "👕", type: "armor", def: 3 }
+ ],
+ mounts: [
+  { id: 0, name: "无", icon: "🚶", speed: 0, atk: 0, def: 0, owned: true },
+  { id: 1, name: "战马", icon: "🐎", speed: 10, atk: 5, def: 3, owned: false, price: 200 },
+  { id: 2, name: "飞龙", icon: "🐉", speed: 20, atk: 10, def: 5, owned: false, price: 500 },
+  { id: 3, name: "麒麟", icon: "🦄", speed: 30, atk: 15, def: 10, owned: false, price: 1000 },
+  { id: 4, name: "圣光狮鹫", icon: "🦅", speed: 40, atk: 20, def: 15, owned: false, price: 2000 }
+ ],
+ jobs: [
+  { id: 0, name: "初心者", desc: "未转职", req: 0, skill: null, atkBonus: 0, defBonus: 0 },
+  { id: 1, name: "狂战士", desc: "高攻击力", req: 10, skill: "狂暴斩", atkBonus: 20, defBonus: 5 },
+  { id: 2, name: "大魔导师", desc: "高魔法攻击", req: 10, skill: "陨石术", atkBonus: 15, mpBonus: 30 },
+  { id: 3, name: "暗影刺客", desc: "高暴击闪避", req: 10, skill: "瞬影杀", atkBonus: 18, defBonus: 3 }
+ ],
+ guildWar: {
+  active: false,
+  enemies: [
+   { name: "敌对军团长", hp: 300, atk: 25, def: 15 },
+   { name: "精英守卫", hp: 150, atk: 18, def: 10 },
+   { name: "普通士兵", hp: 80, atk: 12, def: 5 }
+  ],
+  currentEnemy: 0,
+  rewards: { gold: 500, exp: 200 }
+ },
+ auto: { enabled: false, interval: null, targetMonster: 0 },
+ mobs: [
+  { id: 0, name: "哥布林", icon: "👹", hp: 30, atk: 8, def: 2, exp: 10, gold: 5 },
+  { id: 1, name: "史莱姆", icon: "🫧", hp: 20, atk: 5, def: 1, exp: 8, gold: 3 },
+  { id: 2, name: "骷髅兵", icon: "💀", hp: 50, atk: 12, def: 5, exp: 20, gold: 10 },
+  { id: 3, name: "兽人战士", icon: "👹", hp: 80, atk: 18, def: 8, exp: 35, gold: 20 },
+  { id: 4, name: "火焰巨龙", icon: "🐲", hp: 200, atk: 30, def: 15, exp: 100, gold: 50 }
+ ],
+ achievements: [
+  { id: 0, name: "初出茅庐", cond: () => G.player.level >= 5, got: false, reward: 50 },
+  { id: 1, name: "屠龙勇士", cond: () => G.killDragon, got: false, reward: 200 },
+  { id: 2, name: "亿万富翁", cond: () => G.player.gold >= 1000, got: false, reward: 100 },
+  { id: 3, name: "坐骑收藏家", cond: () => G.mounts.filter(m => m.owned).length >= 3, got: false, reward: 300 },
+  { id: 4, name: "转职大师", cond: () => G.player.job > 0, got: false, reward: 150 }
+ ],
+ quest: { cur: 0, max: 10, done: false },
+ killDragon: false,
+ lastSave: Date.now()
+};
+const $ = id => document.getElementById(id);
+const C = $("content"), A = $("actions"), L = $("log");
+function ui() {
+ const p = G.player;
+ $("pName").textContent = p.name;
+ $("pLevel").textContent = p.level;
+ $("pHp").textContent = p.hp;
+ $("pMaxHp").textContent = p.maxHp;
+ $("pMp").textContent = p.mp;
+ $("pMaxMp").textContent = p.maxMp;
+ $("pAtk").textContent = calcAtk();
+ $("pDef").textContent = calcDef();
+ $("pGold").textContent = p.gold;
+ $("pJob").textContent = G.jobs[p.job].name;
+ $("hpBar").style.width = (p.hp / p.maxHp * 100) + "%";
+ $("mpBar").style.width = (p.mp / p.maxMp * 100) + "%";
+ $("expBar").style.width = (p.exp / p.maxExp * 100) + "%";
+ $("quest").textContent = `击败10只哥布林 (${G.quest.cur}/${G.quest.max})`;
+ $("autoStatus").style.display = G.auto.enabled ? "inline-block" : "none";
+ const jobIcons = ["🧙", "⚔️", "🔮", "🗡️"];
+ $("avatar").textContent = jobIcons[p.job];
+}
+function calcAtk() {
+ const base = G.player.atk;
+ const weapon = G.equip.weapon?.atk || 0;
+ const mount = G.mounts[G.player.mount].atk;
+ const jobBonus = G.jobs[G.player.job].atkBonus || 0;
+ return base + weapon + mount + jobBonus;
+}
+function calcDef() {
+ const base = G.player.def;
+ const armor = G.equip.armor?.def || 0;
+ const mount = G.mounts[G.player.mount].def;
+ const jobBonus = G.jobs[G.player.job].defBonus || 0;
+ return base + armor + mount + jobBonus;
+}
+function log(msg, cls = "info") {
+ const d = document.createElement("div");
+ d.className = "log " + cls;
+ d.textContent = msg;
+ L.appendChild(d);
+ L.scrollTop = L.scrollHeight;
+}
+document.querySelectorAll("#tabs button").forEach(btn => {
+ btn.onclick = () => {
+  document.querySelectorAll("#tabs button").forEach(x => x.classList.remove("active"));
+  btn.classList.add("active");
+  tab(btn.dataset.tab);
+ };
+});
+function tab(t) {
+ C.innerHTML = ""; A.innerHTML = "";
+ if (t === "explore") explore();
+ if (t === "city") city();
+ if (t === "equip") equip();
+ if (t === "bag") bag();
+ if (t === "mount") mountPanel();
+ if (t === "job") jobPanel();
+ if (t === "guild") guildWarPanel();
+ if (t === "auto") autoPanel();
+ if (t === "achieve") achievePanel();
+}
+function explore() {
+ C.innerHTML = "<h3>🗺️ 野外探索</h3>";
+ G.mobs.forEach((mob, i) => {
+  C.innerHTML += `<div class="monster">
+   <div class="icon">${mob.icon}</div>
+   <div class="info">
+    <div class="name">${mob.name}</div>
+    <div>HP:${mob.hp} ATK:${mob.atk} DEF:${mob.def}</div>
+   </div>
+   <button class="btn btn-danger" onclick="fight(${i})">攻击</button>
+  </div>`;
+ });
+ A.innerHTML = `<button class="btn" onclick="rest()">🏕️ 休息</button>`;
+}
+function fight(id) {
+ const mob = G.mobs[id];
+ log(`遭遇了${mob.name}！`, "combat");
+ const battle = setInterval(() => {
+  const dmg = Math.max(1, calcAtk() - mob.def);
+  mob.hp -= dmg;
+  log(`你对${mob.name}造成${dmg}伤害`, "combat");
+  if (mob.hp <= 0) {
+   clearInterval(battle);
+   win(mob, id);
+   return;
+  }
+  const mdmg = Math.max(1, mob.atk - calcDef());
+  G.player.hp -= mdmg;
+  log(`${mob.name}对你造成${mdmg}伤害`, "combat");
+  if (G.player.hp <= 0) {
+   clearInterval(battle);
+   lose();
+  }
+  ui();
+ }, 800);
+}
+function win(mob, id) {
+ log(`击败了${mob.name}！获得${mob.exp}经验和${mob.gold}金币`, "level");
+ G.player.exp += mob.exp;
+ G.player.gold += mob.gold;
+ if (id === 0) {
+  G.quest.cur++;
+  if (G.quest.cur >= G.quest.max && !G.quest.done) {
+   G.quest.done = true;
+   G.player.gold += 100;
+   log("任务完成！奖励100金币", "level");
+  }
+ }
+ if (id === 4) G.killDragon = true;
+ checkLevel();
+ ui();
+}
+function lose() {
+ log("你被击败了！", "combat");
+ G.player.hp = G.player.maxHp;
+ G.player.mp = G.player.maxMp;
+ ui();
+}
+function city() {
+ C.innerHTML = "<h3>🏰 主城</h3>";
+ C.innerHTML += `<div class="monster" onclick="visitShop()">
+   <div class="icon">🏪</div>
+   <div class="info">
+    <div class="name">商店</div>
+    <div>购买装备和药水</div>
+   </div>
+  </div>`;
+ C.innerHTML += `<div class="monster" onclick="tab('guild')">
+   <div class="icon">🏰</div>
+   <div class="info">
+    <div class="name">公会大厅</div>
+    <div>参与公会战</div>
+   </div>
+  </div>`;
+}
+function visitShop() {
+ C.innerHTML = "<h3>🏪 商店</h3>";
+ const items = [
+  { id: 101, name: "生命药水", icon: "🧪", price: 20, type: "consume", effect: "heal", value: 30 },
+  { id: 102, name: "魔法药水", icon: "🔮", price: 15, type: "consume", effect: "mana", value: 20 },
+  { id: 103, name: "铁剑", icon: "⚔️", price: 80, type: "weapon", atk: 8 },
+  { id: 104, name: "锁子甲", icon: "🛡️", price: 70, type: "armor", def: 6 }
+ ];
+ items.forEach(item => {
+  C.innerHTML += `<div class="monster" onclick="buyItem(${item.id})">
+    <div class="icon">${item.icon}</div>
+    <div class="info">
+     <div class="name">${item.name}</div>
+     <div>价格：${item.price}金币</div>
+    </div>
+    <button class="btn btn-primary">购买</button>
+   </div>`;
+ });
+ A.innerHTML = `<button class="btn" onclick="tab('city')">返回</button>`;
+}
+function buyItem(id) {
+ const items = [
+  { id: 101, name: "生命药水", icon: "🧪", price: 20, type: "consume", effect: "heal", value: 30 },
+  { id: 102, name: "魔法药水", icon: "🔮", price: 15, type: "consume", effect: "mana", value: 20 },
+  { id: 103, name: "铁剑", icon: "⚔️", price: 80, type: "weapon", atk: 8 },
+  { id: 104, name: "锁子甲", icon: "🛡️", price: 70, type: "armor", def: 6 }
+ ];
+ const item = items.find(i => i.id === id);
+ if (G.player.gold >= item.price) {
+  G.player.gold -= item.price;
+  if (item.type === "consume") {
+   const existing = G.bag.find(i => i.id === item.id);
+   if (existing) existing.count++;
+   else G.bag.push({...item, count: 1});
+  } else {
+   G.bag.push({...item});
+  }
+  log(`购买了${item.name}`, "loot");
+  ui();
+ } else {
+  log("金币不足！", "info");
+ }
+}
+function equip() {
+ C.innerHTML = "<h3>⚔️ 装备栏</h3>";
+ const slots = [
+  { key: "weapon", name: "武器", icon: "⚔️" },
+  { key: "armor", name: "护甲", icon: "🛡️" },
+  { key: "helmet", name: "头盔", icon: "⛑️" },
+  { key: "boots", name: "靴子", icon: "👢" }
+ ];
+ slots.forEach(slot => {
+  const e = G.equip[slot.key];
+  C.innerHTML += `<div class="monster">
+   <div class="icon">${slot.icon}</div>
+   <div class="info">
+    <div class="name">${e ? e.name : slot.name + "(空)"}</div>
+    <div>${e ? `攻击+${e.atk || 0} 防御+${e.def || 0}` : "无装备"}</div>
+   </div>
+   ${e ? `<button class="btn" onclick="unequip('${slot.key}')">卸下</button>` : ""}
+  </div>`;
+ });
+}
+function unequip(slot) {
+ if (G.equip[slot]) {
+  G.bag.push(G.equip[slot]);
+  G.equip[slot] = null;
+  log("卸下装备", "info");
+  ui();
+  equip();
+ }
+}
+function bag() {
+ C.innerHTML = "<h3>🎒 背包</h3>";
+ if (G.bag.length === 0) {
+  C.innerHTML += "<p>背包是空的</p>";
+  return;
+ }
+ G.bag.forEach((item, i) => {
+  C.innerHTML += `<div class="card" onclick="useItem(${i})">
+   <div style="font-size:2em;">${item.icon}</div>
+   <div>${item.name}</div>
+   ${item.count ? `<div>x${item.count}</div>` : ""}
+  </div>`;
+ });
+}
+function useItem(i) {
+ const item = G.bag[i];
+ if (item.type === "consume") {
+  if (item.effect === "heal") {
+   G.player.hp = Math.min(G.player.maxHp, G.player.hp + item.value);
+   log(`使用${item.name}，恢复${item.value}生命`, "info");
+  } else if (item.effect === "mana") {
+   G.player.mp = Math.min(G.player.maxMp, G.player.mp + item.value);
+   log(`使用${item.name}，恢复${item.value}魔法`, "info");
+  }
+  item.count--;
+  if (item.count <= 0) G.bag.splice(i, 1);
+ } else if (item.type === "weapon") {
+  if (G.equip.weapon) G.bag.push(G.equip.weapon);
+  G.equip.weapon = item;
+  G.bag.splice(i, 1);
+  log(`装备了${item.name}`, "info");
+ } else if (item.type === "armor") {
+  if (G.equip.armor) G.bag.push(G.equip.armor);
+  G.equip.armor = item;
+  G.bag.splice(i, 1);
+  log(`装备了${item.name}`, "info");
+ }
+ ui();
+ tab("bag");
+}
+function mountPanel() {
+ C.innerHTML = "<h3>🐎 坐骑系统</h3>";
+ G.mounts.forEach((mount, i) => {
+  const equipped = G.player.mount === i ? "⚡已装备" : "";
+  C.innerHTML += `<div class="monster" onclick="toggleMount(${i})">
+   <div class="icon">${mount.icon}</div>
+   <div class="info">
+    <div class="name">${mount.name} ${equipped}</div>
+    <div>速度+${mount.speed}% 攻击+${mount.atk} 防御+${mount.def}</div>
+   </div>
+   <div>${mount.owned ? "已拥有" : `💰${mount.price}`}</div>
+  </div>`;
+ });
+}
+function toggleMount(id) {
+ const mount = G.mounts[id];
+ if (!mount.owned) {
+  if (G.player.gold >= mount.price) {
+   G.player.gold -= mount.price;
+   mount.owned = true;
+   log(`购买了${mount.name}！`, "loot");
+  } else {
+   log("金币不足！", "info");
+   return;
+  }
+ }
+ G.player.mount = id;
+ log(`装备了${mount.name}！`, "info");
+ ui();
+ mountPanel();
+}
+function jobPanel() {
+ C.innerHTML = "<h3>🔄 转职系统</h3>";
+ G.jobs.forEach((job, i) => {
+  if (i === 0) return;
+  const can = G.player.level >= job.req;
+  const current = G.player.job === i ? "✅ 当前职业" : "";
+  C.innerHTML += `<div class="monster ${can ? "card" : ""}" onclick="${can ? `changeJob(${i})` : ""}">
+   <div class="icon">${i === 1 ? "⚔️" : i === 2 ? "🔮" : "🗡️"}</div>
+   <div class="info">
+    <div class="name">${job.name} ${current}</div>
+    <div>${job.desc}</div>
+    <div>需求等级：${job.req} ${can ? "✅" : "❌"}</div>
+   </div>
+  </div>`;
+ });
+}
+function changeJob(id) {
+ if (G.player.level < G.jobs[id].req) return;
+ G.player.job = id;
+ const job = G.jobs[id];
+ log(`转职为${job.name}！学会技能【${job.skill}】`, "level");
+ ui();
+}
+function guildWarPanel() {
+ if (!G.guildWar.active) {
+  C.innerHTML = "<h3>🏰 公会战</h3>";
+  C.innerHTML += `<p>公会战每周举行一次，击败敌对军团可获得丰厚奖励！</p>
+  <button class="btn btn-danger" onclick="startGuildWar()">⚔️ 发起公会战</button>`;
+ } else {
+  const enemy = G.guildWar.enemies[G.guildWar.currentEnemy];
+  C.innerHTML = `<h3>⚔️ 公会战进行中</h3>
+  <div class="monster">
+   <div class="icon">⚔️</div>
+   <div class="info">
+    <div class="name">${enemy.name}</div>
+    <div>HP: ${enemy.hp} ATK: ${enemy.atk} DEF: ${enemy.def}</div>
+   </div>
+  </div>`;
+ }
+}
+function startGuildWar() {
+ G.guildWar.active = true;
+ G.guildWar.currentEnemy = 0;
+ log("公会战开始！", "level");
+ guildWarPanel();
+}
+function autoPanel() {
+ C.innerHTML = "<h3>🤖 自动挂机系统</h3>";
+ const on = G.auto.enabled;
+ C.innerHTML += `<div style="text-align:center; margin:20px 0;">
+  <button class="btn ${on ? 'btn-danger' : 'btn-primary'}" onclick="toggleAuto()">
+   ${on ? '⏸️ 停止挂机' : '▶️ 开始挂机'}
+  </button>
+ </div>`;
+ if (on) {
+  C.innerHTML += `<p>正在自动攻击哥布林...</p>
+  <div>剩余药水：${getPotionCount()}个</div>`;
+ }
+}
+function toggleAuto() {
+ if (G.auto.enabled) {
+  clearInterval(G.auto.interval);
+  G.auto.enabled = false;
+  log("自动挂机已停止", "info");
+ } else {
+  G.auto.enabled = true;
+  G.auto.interval = setInterval(autoFight, 1500);
+  log("自动挂机已开启", "info");
+ }
+ autoPanel();
+ ui();
+}
+function autoFight() {
+ if (G.player.hp <= 20) {
+  usePotion();
+  if (G.player.hp <= 0) {
+   toggleAuto();
+   return;
+  }
+ }
+ const mob = G.mobs[0];
+ const dmg = Math.max(1, calcAtk() - mob.def);
+ mob.hp -= dmg;
+ if (mob.hp <= 0) {
+  win(mob, 0);
+  mob.hp = G.mobs[0].hp;
+ } else {
+  const mdmg = Math.max(1, mob.atk - calcDef());
+  G.player.hp -= mdmg;
+  if (G.player.hp <= 0) {
+   lose();
+   toggleAuto();
+  }
+ }
+ ui();
+}
+function getPotionCount() {
+ const pot = G.bag.find(i => i.effect === "heal");
+ return pot ? pot.count : 0;
+}
+function usePotion() {
+ const pot = G.bag.find(i => i.effect === "heal");
+ if (pot && pot.count > 0) {
+  G.player.hp = Math.min(G.player.maxHp, G.player.hp + pot.value);
+  pot.count--;
+ }
+}
+function achievePanel() {
+ C.innerHTML = "<h3>🏆 成就系统</h3>";
+ G.achievements.forEach(a => {
+  const ok = a.cond();
+  if (ok && !a.got) {
+   a.got = true;
+   G.player.gold += a.reward;
+   log(`🏆 达成成就：${a.name}，获得${a.reward}金币！`, "level");
+  }
+  C.innerHTML += `<div class="monster">
+   <div class="icon">${a.got ? "✅" : "🔒"}</div>
+   <div class="info">
+    <div class="name">${a.name}</div>
+    <div>奖励：${a.reward}金币</div>
+   </div>
+  </div>`;
+ });
+}
+function rest() {
+ G.player.hp = G.player.maxHp;
+ G.player.mp = G.player.maxMp;
+ log("休息恢复了状态", "info");
+ ui();
+}
+function checkLevel() {
+ while (G.player.exp >= G.player.maxExp) {
+  G.player.exp -= G.player.maxExp;
+  G.player.level++;
+  G.player.maxHp += 20;
+  G.player.maxMp += 10;
+  G.player.atk += 3;
+  G.player.def += 2;
+  log(`恭喜升级到 Lv.${G.player.level}！`, "level");
+ }
+}
+function saveGame() {
+ G.lastSave = Date.now();
+ localStorage.setItem("myRPG", JSON.stringify(G));
+ log("游戏已保存", "info");
+}
+function loadGame() {
+ const d = localStorage.getItem("myRPG");
+ if (d) {
+  Object.assign(G, JSON.parse(d));
+  log("游戏已读取", "info");
+  ui();
+ }
+}
+function resetGame() {
+ location.reload();
+}
+function setSkin(name) {
+ const root = document.documentElement;
+ document.querySelectorAll(".skin-btn").forEach(b => b.classList.remove("active"));
+ if (name === "dark") {
+  root.style.setProperty("--bg", "#0a0a14");
+  root.style.setProperty("--gold", "#f0c050");
+ } else if (name === "ice") {
+  root.style.setProperty("--bg", "#0a1a2e");
+  root.style.setProperty("--gold", "#60c0f0");
+ } else if (name === "blood") {
+  root.style.setProperty("--bg", "#140a0a");
+  root.style.setProperty("--gold", "#f06060");
+ }
+ document.querySelector(`[onclick="setSkin('${name}')"]`).classList.add("active");
+}
+ui();
+tab("explore");
+log("欢迎来到魔域传说终极版！", "info");
+</script>
+</body>
+</html>
